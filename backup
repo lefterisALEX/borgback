@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+export box_remote_path="remote_path_to_store_backup"
+export local_path_to_backup="path_you_wat_to_backup"
+export path_to_exclude="path_you_want_to_exclude"
+
+export box_user=$(aws --region=eu-west-1 ssm get-parameter --name "/homelabs/borg/user" --with-decryption --output text --query Parameter.Value)
+export BORG_PASSPHRASE=$(aws --region=eu-west-1 ssm get-parameter --name "/homelabs/borg/passphrase" --with-decryption --output text --query Parameter.Value)
+export box_url="ssh://${box_user}@${box_user}.your-storagebox.de:23/."
+export ssh_key="~/.ssh/id_rsa.pub"
+
+
+LOG="/var/log/borg/backup.log"
+ARCH=$(uname -m)
+
+exec > >(tee -i ${LOG})
+exec 2>&1
+
+
+### custom functions
+
+Help()
+{
+   # Display Help
+   echo
+   echo "options:"
+   echo "backup    create a new backup."
+   echo "list      list all backups"
+   echo
+}
+
+post_Prepare()
+{
+   # Display Help
+   echo
+   echo "you can place the script under /usr/local/bin and set right permission."
+   echo "example:"
+   echo "sudo chmod u+x backup && sudo cp backup /usr/local/bin/"
+   echo ""
+   echo "Schedule? Create a cronjob.example: "
+   echo "# m h  dom mon dow   command"
+   echo "0 1 * * * /usr/local/bin/backup.sh > /dev/null 2>&1"
+   echo
+}
+
+pre_backup_hook()
+{
+   echo "### executing pre-backup jobs  ####"
+   # you can add here more jobs if needed
+}
+
+post_backup_hook()
+{
+   echo "### executing pre-backup jobs  ####"
+   # you can add here more jobs if needed
+}
+
+
+## menu
+
+case $1 in
+  "")
+    pre_backup_hook
+    
+    borg create -v --stats \
+    ${box_url}/${box_remote_path}::'{now:%Y-%m-%d_%H:%M}' \
+    ${local_path_to_backup} \
+    --exclude ${path_to_exclude} 
+   
+    borg prune -v --list  ${box_url}/${box_remote_path} --keep-daily=3
+    
+    post_backup_hook
+  ;;
+
+ list)
+    borg list ${box_url}/${box_remote_path}
+  ;;
+
+  *)
+    Help
+  ;;
+esac
