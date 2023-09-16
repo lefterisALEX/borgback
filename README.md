@@ -76,4 +76,9 @@ export box_remote_path="backup/homelabs/zigbee"
 borg list ${box_url}/${box_remote_path}
 
 ```
-7.
+7. Restore file
+```
+cd /   # for IOTStack go to / , so will restore everything to /home/pi/IOTStack
+borg list ${box_url}/${box_remote_path}
+borg  extract ${box_url}/${box_remote_path}::2023-09-14_04:00
+```
