@@ -20,9 +20,11 @@ curl https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip -o awscliv2.zip ;
 ```
 ## dowload backup 
 
+```
 curl -Lo backup https://raw.githubusercontent.com/lefterisALEX/borgback/main/backup  
 chmod +x backup    
 sudo mv backup /usr/local/bin/
+```
 
 ## initialize repository
 Before initialize you can export some variable
