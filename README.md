@@ -52,33 +52,3 @@ borg  ssh://${user}@${user}.your-storagebox.de:23/./backup/homelabs/<server>/<ap
 borg mount ssh://${user}@${user}.your-storagebox.de:23/./backup/homelabs/<server>/<app>::<backup_name>  /<mount_point>
 ```
 
-## Restore  a system (as root for the smart devices)  
-1. Run the first steps to  install tha packages
-2. generate ssh keypair
-3. export variables
-```
-export box_user=$(aws --region=eu-west-1 ssm get-parameter --name "/homelabs/borg/user" --with-decryption --output text --query Parameter.Value)
-export BORG_PASSPHRASE=$(aws --region=eu-west-1 ssm get-parameter --name "/homelabs/borg/passphrase" --with-decryption --output text --query Parameter.Value)
-export box_url="ssh://${box_user}@${box_user}.your-storagebox.de:23/."
-export ssh_key="~/.ssh/id_rsa.pub"
-cat  /root/.ssh/id_rsa.pub | ssh -p23 ${box_user}@${box_user}.your-storagebox.de install-ssh-key
-```
-4. Modify the backup file and set the paths
-example:
-```
-export box_remote_path="backup/homelabs/zigbee"
-export local_path_to_backup="/home/pi/IOTstack"
-export path_to_exclude="/home/pi/IOTstack/volumes"
-```
-6. export the remote path as variable and check the backups
-```
-export box_remote_path="backup/homelabs/zigbee"
-borg list ${box_url}/${box_remote_path}
-
-```
-7. Restore file
-```
-cd /   # for IOTStack go to / , so will restore everything to /home/pi/IOTStack
-borg list ${box_url}/${box_remote_path}
-borg  extract ${box_url}/${box_remote_path}::2023-09-14_04:00
-```
